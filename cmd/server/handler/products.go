@@ -25,6 +25,17 @@ func NewProduct(p products.Service) *Product {
 	}
 }
 
+
+// ListProducts godoc
+// @Summary List products
+// @Tags Products
+// @Description get products
+// @Accept  json
+// @Produce  json
+// @Param token header string true "token"
+// @Success 200 {object} web.Response
+// @Router /products [get]
+
 func (c *Product) GetAll() gin.HandlerFunc {
     return func(ctx *gin.Context) {
         token := ctx.Request.Header.Get("token")
@@ -41,6 +52,17 @@ func (c *Product) GetAll() gin.HandlerFunc {
       ctx.JSON(200, web.NewResponse(200, p, ""))
    }
 }
+
+// StoreProducts godoc
+// @Summary Store products
+// @Tags Products
+// @Description store products
+// @Accept  json
+// @Produce  json
+// @Param token header string true "token"
+// @Param product body request true "Product to store"
+// @Success 200 {object} web.Response
+// @Router /products [post]
 
 func (c *Product) Store() gin.HandlerFunc {
    return func(ctx *gin.Context) {
