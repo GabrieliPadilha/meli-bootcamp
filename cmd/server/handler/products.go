@@ -29,13 +29,12 @@ func NewProduct(p products.Service) *Product {
 // ListProducts godoc
 // @Summary List products
 // @Tags Products
-// @Description get products
+// @Description Get products
 // @Accept  json
 // @Produce  json
 // @Param token header string true "token"
 // @Success 200 {object} web.Response
 // @Router /products [get]
-
 func (c *Product) GetAll() gin.HandlerFunc {
     return func(ctx *gin.Context) {
         token := ctx.Request.Header.Get("token")
@@ -63,7 +62,6 @@ func (c *Product) GetAll() gin.HandlerFunc {
 // @Param product body request true "Product to store"
 // @Success 200 {object} web.Response
 // @Router /products [post]
-
 func (c *Product) Store() gin.HandlerFunc {
    return func(ctx *gin.Context) {
       token := ctx.Request.Header.Get("token")
@@ -109,6 +107,16 @@ func (c *Product) Store() gin.HandlerFunc {
    }
 }
 
+// Update godoc
+// @Summary Update products
+// @Tags Products
+// @Description Update products
+// @Accept  json
+// @Produce  json
+// @Param token header string true "token"
+// @Param product body request true "Product to store"
+// @Success 200 {object} web.Response
+// @Router /products [put]
 func (c *Product) Update() gin.HandlerFunc {
    return func(ctx *gin.Context) {
       token := ctx.GetHeader("token")
@@ -154,6 +162,16 @@ func (c *Product) Update() gin.HandlerFunc {
    }
 }
 
+// UpdateName godoc
+// @Summary Update Name
+// @Tags Products
+// @Description Update products name
+// @Accept  json
+// @Produce  json
+// @Param token header string true "token"
+// @Param product body request true "Product to store"
+// @Success 200 {object} web.Response
+// @Router /products [patch]
 func (c *Product) UpdateName() gin.HandlerFunc {
    return func(ctx *gin.Context) {
        token := ctx.GetHeader("token")
@@ -184,6 +202,16 @@ func (c *Product) UpdateName() gin.HandlerFunc {
    }
 }
 
+// Delete godoc
+// @Summary Delete product
+// @Tags Products
+// @Description Delete product
+// @Accept  json
+// @Produce  json
+// @Param token header string true "token"
+// @Param product body request true "Product to store"
+// @Success 200 {object} web.Response
+// @Router /products [delete]
 func (c *Product) Delete() gin.HandlerFunc {
    return func(ctx *gin.Context) {
        token := ctx.GetHeader("token")
