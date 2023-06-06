@@ -1,10 +1,14 @@
 package handler
 
 import (
-    "github.com/gin-gonic/gin"
-    "github.com/GabrieliPadilha/meli-bootcamp/internal/products"
-    "strconv"
-    "fmt"
+	"fmt"
+	"net/http"
+	"os"
+	"strconv"
+
+	"github.com/GabrieliPadilha/meli-bootcamp/internal/products"
+	"github.com/GabrieliPadilha/meli-bootcamp/pkg/web"
+	"github.com/gin-gonic/gin"
 )
 type request struct {
     Name  string  `json:"name"`
@@ -24,59 +28,76 @@ func NewProduct(p products.Service) *Product {
 func (c *Product) GetAll() gin.HandlerFunc {
     return func(ctx *gin.Context) {
         token := ctx.Request.Header.Get("token")
-        if token != "123456" {
-           ctx.JSON(401, gin.H{
-              "error": "token inválido",
-           })
+        if token != os.Getenv("TOKEN") {
+           ctx.JSON(401, web.NewResponse(401, nil, "token inválido"))
            return
         }
    
         p, err := c.service.GetAll()
         if err != nil {
-           ctx.JSON(404, gin.H{
-              "error": err.Error(),
-           })
+           ctx.JSON(404, web.NewResponse(404, nil, "não há produtudos armazenados"))
            return
         }
-        ctx.JSON(200, p)
-     }
+      ctx.JSON(200, web.NewResponse(200, p, ""))
    }
+}
 
 func (c *Product) Store() gin.HandlerFunc {
-    return func(ctx *gin.Context) {
-        token := ctx.Request.Header.Get("token")
-        if token != "123456" {
-           ctx.JSON(401, gin.H{ "error": "token inválido" })
-           return
-        }
-        var req request
-        err := ctx.Bind(&req)
-        if  err != nil {
-           ctx.JSON(404, gin.H{
-              "error": err.Error(),
-           })
-           return
-        }
-        p, err := c.service.Store(req.Name, req.Category, req.Count, req.Price)
-        if err != nil {
-           ctx.JSON(404, gin.H{ "error": err.Error() })
-           return
-        }
-        ctx.JSON(200, p)
-     }
+   return func(ctx *gin.Context) {
+      token := ctx.Request.Header.Get("token")
+      if token != os.Getenv("TOKEN") {
+         ctx.JSON(401, web.NewResponse(401, nil, "token inválido"))
+         return
+      }
+      var req request
+      err := ctx.Bind(&req)
+      if  err != nil {
+         ctx.JSON(404, gin.H{
+            "error": err.Error(),
+         })
+         return
+      }
+
+      if req.Name == "" {
+         ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, "o nome do produto é obrigatório"))
+         return
+      }
+
+      if req.Category == "" {
+         ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, "a categoria do produto é obrigatório"))
+         return
+      }
+
+      if req.Count == 0 {
+         ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, "o quantidade é necessária"))
+         return
+      }
+
+      if req.Price == 0 {
+         ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, "o preço é obrigatório"))
+         return
+      }
+
+      p, err := c.service.Store(req.Name, req.Category, req.Count, req.Price)
+      if err != nil {
+         ctx.JSON(404, gin.H{ "error": err.Error() })
+         return
+      }
+      ctx.JSON(200, p)
    }
+}
 
 func (c *Product) Update() gin.HandlerFunc {
    return func(ctx *gin.Context) {
       token := ctx.GetHeader("token")
-      if token != "123456" {
-         ctx.JSON(401, gin.H{ "error": "token inválido" })
+      if token != os.Getenv("TOKEN") {
+         ctx.JSON(401, web.NewResponse(401, nil, "token inválido"))
          return
       }
 
       id, err := strconv.ParseInt(ctx.Param("id"),10, 64) //verifica o tamanho e o tipo do id
       if err != nil {
-         ctx.JSON(400, gin.H{ "error":  "invalid ID"})
+         ctx.JSON(400, web.NewResponse(400, nil, "ID inválido"))
          return
       }
 
@@ -86,22 +107,22 @@ func (c *Product) Update() gin.HandlerFunc {
          return
       }
       if req.Name == "" {
-         ctx.JSON(400, gin.H{ "error": "O nome do produto é obrigatório"})
+         ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, "o nome do produto é obrigatório"))
          return
       }
       if req.Category == "" {
-         ctx.JSON(400, gin.H{ "error": "O tipo do produto é obrigatório"})
+         ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, "o tipo do produto é obrigatório"))
          return
       }
       if req.Count == 0 {
-         ctx.JSON(400, gin.H{ "error": "A quantidade é obrigatória"})
+         ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil,"o quantidade é obrigatória"))
          return
       }
       if req.Price == 0 {
-         ctx.JSON(400, gin.H{ "error": "O preço é obrigatório"})
+         ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil,"o preço é obrigatório"))
+
          return
       }
-
       p, err := c.service.Update(int(id), req.Name, req.Category, req.Count, req.Price)
       if err != nil {
          ctx.JSON(404, gin.H{ "error": err.Error() })
@@ -114,7 +135,7 @@ func (c *Product) Update() gin.HandlerFunc {
 func (c *Product) UpdateName() gin.HandlerFunc {
    return func(ctx *gin.Context) {
        token := ctx.GetHeader("token")
-       if token != "123456" {
+       if token != os.Getenv("TOKEN") {
            ctx.JSON(401, gin.H{ "error": "token inválido" })
            return
        }
@@ -144,7 +165,7 @@ func (c *Product) UpdateName() gin.HandlerFunc {
 func (c *Product) Delete() gin.HandlerFunc {
    return func(ctx *gin.Context) {
        token := ctx.GetHeader("token")
-       if token != "123456" {
+       if token != os.Getenv("TOKEN") {
            ctx.JSON(401, gin.H{ "error": "token inválido" })
            return
        }

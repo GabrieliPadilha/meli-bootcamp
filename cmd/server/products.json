@@ -1,0 +1,30 @@
+[
+  {
+    "id": 2,
+    "name": "Camisetas G",
+    "category": "Roupas",
+    "count": 15,
+    "price": 49
+  },
+  {
+    "id": 3,
+    "name": "Camisetas P",
+    "category": "Roupas",
+    "count": 15,
+    "price": 49
+  },
+  {
+    "id": 4,
+    "name": "Camisetas PP",
+    "category": "Roupas",
+    "count": 15,
+    "price": 49
+  },
+  {
+    "id": 5,
+    "name": "Camisetas PP",
+    "category": "Roupas",
+    "count": 15,
+    "price": 49
+  }
+]

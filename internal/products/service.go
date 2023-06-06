@@ -3,7 +3,7 @@ package products
 type Service interface {
 	GetAll() ([]Product, error)
 	Store(name string, category string, count int, price float64) (Product, error)
-	Update(id int, name, productType string, count int, price float64) (Product, error)
+	Update(id int, name, category string, count int, price float64) (Product, error)
 	UpdateName(id int, name string) (Product, error)
 	Delete(id int) error
 }
@@ -21,7 +21,6 @@ func (s *service) GetAll() ([]Product, error) {
 	if err != nil{
 		return nil, err
 	}
-
 	return ps, nil
 }
 
@@ -41,9 +40,9 @@ lastID, err := s.repository.LastID()
 	return product, nil
 }
 
-func (s *service) Update(id int, name, productType string, count int, price float64) (Product, error) {
+func (s *service) Update(id int, name, category string, count int, price float64) (Product, error) {
 
-	return s.repository.Update(id, name, productType, count, price)
+	return s.repository.Update(id, name, category, count, price)
 }
 
 func (s *service) UpdateName(id int, name string) (Product, error) {

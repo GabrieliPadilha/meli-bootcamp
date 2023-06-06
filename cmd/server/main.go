@@ -1,13 +1,25 @@
 package main
 
 import (
-    "github.com/gin-gonic/gin"
-    "github.com/GabrieliPadilha/meli-bootcamp/cmd/server/handler"
-    "github.com/GabrieliPadilha/meli-bootcamp/internal/products"
+  "log"
+	"github.com/GabrieliPadilha/meli-bootcamp/cmd/server/handler"
+	"github.com/GabrieliPadilha/meli-bootcamp/internal/products"
+  "github.com/GabrieliPadilha/meli-bootcamp/pkg/store"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-    repo := products.NewRepository()
+    err := godotenv.Load("../../.env")
+    if err != nil {
+      log.Fatal("error ao carregar o arquivo .env")
+    }
+    store := store.Factory("arquivo", "products.json")
+    if store == nil {
+      log.Fatal("Não foi possivel criar a store")
+    }
+
+    repo := products.NewRepository(store)
     service := products.NewService(repo)
     p := handler.NewProduct(service)
 
