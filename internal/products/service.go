@@ -25,24 +25,21 @@ func (s *service) GetAll() ([]Product, error) {
 }
 
 func (s *service) Store(name, category string, count int, price float64) (Product, error) {
-lastID, err := s.repository.LastID()
-	if err != nil{
-		return Product{}, err
-	}
-
-	lastID++
-
-	product, err := s.repository.Store(lastID, name, category, count, price)
-	if err != nil{
+	product := Product{Name: name, Category: category, Count: count, Price: price}
+	product, err := s.repository.Store(product)
+	if err != nil {
 		return Product{}, err
 	}
 
 	return product, nil
 }
 
-func (s *service) Update(id int, name, category string, count int, price float64) (Product, error) {
+func (s service) Update(id int, name, productType string, count int, price float64) (Product, error) {
+	product := Product{id, name, productType, count, price}
 
-	return s.repository.Update(id, name, category, count, price)
+	product, err := s.repository.Update(product)
+
+	return product, err
 }
 
 func (s *service) UpdateName(id int, name string) (Product, error) {

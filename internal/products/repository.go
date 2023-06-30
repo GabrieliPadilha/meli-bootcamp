@@ -5,7 +5,6 @@ import (
 	"fmt"
 )
 
-//repository de produto coma estrutuda de produto
 type Product struct {
 	ID       int     `json:"id"`
 	Name     string  `json:"name"`
@@ -14,17 +13,10 @@ type Product struct {
 	Price    float64 `json:"price"`
 }
 
-//variavel de tipo array de Produtos onde irá persistir os dados
-var ps []Product
-// variavel para guardar o valor do ultimo ID que será usado para criar novos produtos
-var lastID int
-
-//interface com os metodos de buscar todos, inserir produto e obtem o valor do ultimo id
 type Repository interface{
 	GetAll() ([]Product, error)
-	Store(id int, name, category string, count int, price float64) (Product, error)
-	LastID() (int, error)
-	Update(id int,  name, category string, count int, price float64) (Product, error)
+	Store(product Product) (Product, error)
+	Update(product Product) (Product, error)
 	UpdateName(id int, name string) (Product, error)
 	Delete(id int) error
 }
@@ -33,7 +25,8 @@ type repository struct {
 	db store.Store
 }
 
-// retorna o endereço de memeoria da estrutura vazia repository
+var ps []Product
+
 func NewRepository(db store.Store) Repository {
 	return &repository{
 		db: db,
@@ -63,10 +56,9 @@ func (r *repository) LastID() (int, error) {
 	return ultimoProduto.ID, nil
 }
 
-func (r *repository) Store(id int, name, category string, count int, price float64) (Product, error) {
+func (r *repository) Store(p Product) (Product, error) {
 	var produtos []Product
 	r.db.Read(&produtos)
-	p := Product{id, name, category, count, price}
 	produtos = append(produtos, p)
 	err := r.db.Write(produtos)
 	if err != nil {
@@ -75,28 +67,20 @@ func (r *repository) Store(id int, name, category string, count int, price float
 	return p, nil
 }
 
-func (r *repository) Update(id int, name, category string, count int, price float64) (Product, error) {
-	updated := false
-	var produtos []Product
-	r.db.Read(&produtos)
-	p := Product{Name: name, Category: category, Count: count, Price: price}
-
-	for indice := range produtos{
-		if produtos[indice].ID == id {
-			p.ID = id 
-			produtos[indice] = p 
-			err := r.db.Write(produtos)
-			if err != nil {
-				return Product{}, err
-			}
-			updated = true
+func (r *repository) Update(p Product) (Product, error) {
+	// p := Product{Name: name, Category: productType, Count: count, Price: price} // Instância de "p" para Update
+	updated := false    // Atribuição false para Updated - não foi realizado nenhum update até aqui
+	for i := range ps { // Este For percorrerá a lista dos elementos criados no array para buscar o elemento com o Id que já existe
+		if ps[i].ID == p.ID { // Caso encontre esse Id ...
+			ps[i].ID = p.ID    // ... o Id do novo produto será o mesmo do já existente (basicamente, o Id que passamos substituirá o já existente, só que são iguais)...
+			ps[i] = p      // ... e aqui, irá atualizar (neste Id), todos os valores dos elementos que enviarmos no Put...
+			updated = true // ... alterando o seu status para "True"
 		}
 	}
-
-	if !updated {
-		return Product{}, fmt.Errorf("produto %d no encontrado", id)
+	if !updated { // Caso não tenha havido esse update, ou seja, se continuar como 'false'...
+		return Product{}, fmt.Errorf("produto %d não encontrado", p.ID) // ... nos será enviada uma mensagem de erro
 	}
-	return p, nil
+	return p, nil // Retorno do novo produto com um erro do tipo 'nil'
 }
 
 func (r *repository) UpdateName(id int, name string) (Product, error) {
@@ -139,4 +123,3 @@ func (r *repository) Delete(id int) error {
 	r.db.Write(produtos)
 	return nil
 }
- 

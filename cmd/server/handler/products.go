@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/GabrieliPadilha/meli-bootcamp/internal/products"
@@ -33,15 +32,14 @@ func NewProduct(p products.Service) *Product {
 // @Accept  json
 // @Produce  json
 // @Param token header string true "token"
-// @Success 200 {object} web.Response
-// @Router /products [get]
+// @Success 200 {object} web.Response // @Router /products [get]
 func (c *Product) GetAll() gin.HandlerFunc {
     return func(ctx *gin.Context) {
-        token := ctx.Request.Header.Get("token")
-        if token != os.Getenv("TOKEN") {
-           ctx.JSON(401, web.NewResponse(401, nil, "token inválido"))
-           return
-        }
+      //   token := ctx.Request.Header.Get("token")
+      //   if token != os.Getenv("TOKEN") {
+      //      ctx.JSON(401, web.NewResponse(401, nil, "token inválido"))
+      //      return
+      //   }
    
         p, err := c.service.GetAll()
         if err != nil {
@@ -64,11 +62,11 @@ func (c *Product) GetAll() gin.HandlerFunc {
 // @Router /products [post]
 func (c *Product) Store() gin.HandlerFunc {
    return func(ctx *gin.Context) {
-      token := ctx.Request.Header.Get("token")
-      if token != os.Getenv("TOKEN") {
-         ctx.JSON(401, web.NewResponse(401, nil, "token inválido"))
-         return
-      }
+      // token := ctx.Request.Header.Get("token")
+      // if token != os.Getenv("TOKEN") {
+      //    ctx.JSON(401, web.NewResponse(401, nil, "token inválido"))
+      //    return
+      // }
       var req request
       err := ctx.Bind(&req)
       if  err != nil {
@@ -119,11 +117,11 @@ func (c *Product) Store() gin.HandlerFunc {
 // @Router /products [put]
 func (c *Product) Update() gin.HandlerFunc {
    return func(ctx *gin.Context) {
-      token := ctx.GetHeader("token")
-      if token != os.Getenv("TOKEN") {
-         ctx.JSON(401, web.NewResponse(401, nil, "token inválido"))
-         return
-      }
+      // token := ctx.GetHeader("token")
+      // if token != os.Getenv("TOKEN") {
+      //    ctx.JSON(401, web.NewResponse(401, nil, "token inválido"))
+      //    return
+      // }
 
       id, err := strconv.ParseInt(ctx.Param("id"),10, 64) //verifica o tamanho e o tipo do id
       if err != nil {
@@ -174,31 +172,31 @@ func (c *Product) Update() gin.HandlerFunc {
 // @Router /products [patch]
 func (c *Product) UpdateName() gin.HandlerFunc {
    return func(ctx *gin.Context) {
-       token := ctx.GetHeader("token")
-       if token != os.Getenv("TOKEN") {
-           ctx.JSON(401, gin.H{ "error": "token inválido" })
-           return
-       }
-       id, err := strconv.ParseInt(ctx.Param("id"),10, 64)
-       if err != nil {
-           ctx.JSON(400, gin.H{ "error":  "invalid ID"})
-           return
-       }
-       var req request
-       if err := ctx.ShouldBindJSON(&req); err != nil {
-           ctx.JSON(400, gin.H{ "error": err.Error() })
-           return
-       }
-       if req.Name == "" {
-           ctx.JSON(400, gin.H{ "error": "O nome do produto é obrigatório"})
-           return
-       }
-       p, err := c.service.UpdateName(int(id), req.Name)
-       if err != nil {
-           ctx.JSON(404, gin.H{ "error": err.Error() })
-           return
-       }
-       ctx.JSON(200, p)
+      // token := ctx.GetHeader("token")
+      // if token != os.Getenv("TOKEN") {
+      //    ctx.JSON(401, gin.H{ "error": "token inválido" })
+      //    return
+      // }
+      id, err := strconv.ParseInt(ctx.Param("id"),10, 64)
+      if err != nil {
+         ctx.JSON(400, gin.H{ "error":  "invalid ID"})
+         return
+      }
+      var req request
+      if err := ctx.ShouldBindJSON(&req); err != nil {
+         ctx.JSON(400, gin.H{ "error": err.Error() })
+         return
+      }
+      if req.Name == "" {
+         ctx.JSON(400, gin.H{ "error": "O nome do produto é obrigatório"})
+         return
+      }
+      p, err := c.service.UpdateName(int(id), req.Name)
+      if err != nil {
+         ctx.JSON(404, gin.H{ "error": err.Error() })
+         return
+      }
+      ctx.JSON(200, p)
    }
 }
 
@@ -214,21 +212,21 @@ func (c *Product) UpdateName() gin.HandlerFunc {
 // @Router /products [delete]
 func (c *Product) Delete() gin.HandlerFunc {
    return func(ctx *gin.Context) {
-       token := ctx.GetHeader("token")
-       if token != os.Getenv("TOKEN") {
-           ctx.JSON(401, gin.H{ "error": "token inválido" })
-           return
-       }
-       id, err := strconv.ParseInt(ctx.Param("id"),10, 64)
-       if err != nil {
-           ctx.JSON(400, gin.H{ "error":  "invalid ID"})
-           return
-       }
-       err = c.service.Delete(int(id))
-       if err != nil {
-           ctx.JSON(404, gin.H{ "error": err.Error() })
-           return
-       }
-       ctx.JSON(200, gin.H{ "data": fmt.Sprintf("O produto %d foi removido", id) })
+      //  token := ctx.GetHeader("token")
+      //  if token != os.Getenv("TOKEN") {
+      //      ctx.JSON(401, gin.H{ "error": "token inválido" })
+      //      return
+      //  }
+      id, err := strconv.ParseInt(ctx.Param("id"),10, 64)
+      if err != nil {
+         ctx.JSON(400, gin.H{ "error":  "invalid ID"})
+         return
+      }
+      err = c.service.Delete(int(id))
+      if err != nil {
+         ctx.JSON(404, gin.H{ "error": err.Error() })
+         return
+      }
+      ctx.JSON(200, gin.H{ "data": fmt.Sprintf("O produto %d foi removido", id) })
    }
 }

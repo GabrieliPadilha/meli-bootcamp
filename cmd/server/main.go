@@ -1,32 +1,48 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/GabrieliPadilha/meli-bootcamp/cmd/server/handler"
+	"github.com/GabrieliPadilha/meli-bootcamp/config"
 	"github.com/GabrieliPadilha/meli-bootcamp/docs"
 	"github.com/GabrieliPadilha/meli-bootcamp/internal/products"
 	"github.com/GabrieliPadilha/meli-bootcamp/pkg/store"
+	"github.com/GabrieliPadilha/meli-bootcamp/pkg/web"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func GetDummyEndpoint(c *gin.Context) {
-  resp := map[string]string{"hello":"world"}
-  c.JSON(200, resp)
+func respondWithError(c *gin.Context, code int, message string) {
+  c.AbortWithStatusJSON(code, web.NewResponse(code, nil, message))
 }
 
-func DummyMiddleware(c *gin.Context) {
-  fmt.Println("Im a dummy!")
+func TokenAuthMiddleware() gin.HandlerFunc {
+  requiredToken := os.Getenv("TOKEN")
  
-  // Pass on to the next-in-chain
-  c.Next()
+  // We want to make sure the token is set, bail if not
+  if requiredToken == "" {
+      log.Fatal("por favor configure a variável de ambiente TOKEN")
+  }
+ 
+  return func(c *gin.Context) {
+      token := c.GetHeader("token")
+     
+      if token == "" {
+          respondWithError(c, 401, "API token obrigatório")
+          return
+      }
+     
+      if token != requiredToken {
+          respondWithError(c, 401, "token inválido")
+          return
+      }
+     
+      c.Next()
+  }
 }
-
 
 // @title MELI Bootcamp API
 // @version 1.0
@@ -39,10 +55,8 @@ func DummyMiddleware(c *gin.Context) {
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 func main() {
-  err := godotenv.Load("../../.env")
-  if err != nil {
-    log.Fatal("error ao carregar o arquivo .env")
-  }
+  config.InitConfig()
+
   store := store.Factory("arquivo", "products.json")
   if store == nil {
     log.Fatal("Não foi possivel criar a store")
@@ -54,16 +68,18 @@ func main() {
   r := gin.Default()
 
   pr := r.Group("/products")
-  pr.POST("/", p.Store())
-  pr.GET("/", p.GetAll())
-  pr.PUT("/:id", p.Update())
-  pr.PATCH("/:id", p.UpdateName())
-  pr.DELETE("/:id", p.Delete())
-  r.GET("/dummy", GetDummyEndpoint)
-  r.Use(DummyMiddleware)
+  {
+    pr.Use(TokenAuthMiddleware())
 
+    pr.POST("/", p.Store())
+    pr.GET("/", p.GetAll())
+    pr.PUT("/:id", p.Update())
+    pr.PATCH("/:id", p.UpdateName())
+    pr.DELETE("/:id", p.Delete())
+  }
+  
   docs.SwaggerInfo.Host = os.Getenv("HOST")
   r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
+    
   r.Run()
 }
